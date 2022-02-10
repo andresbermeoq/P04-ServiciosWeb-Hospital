@@ -3,7 +3,7 @@ package ec.edu.ups.model;
 import java.io.Serializable;
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.sql.Timestamp;
 
 
 /**
@@ -29,9 +29,8 @@ public class Cita implements Serializable {
 	@Column(name="estado_cita")
 	private String estadoCita;
 
-	@Temporal(TemporalType.DATE)
 	@Column(name="fecha_cita")
-	private Date fechaCita;
+	private Timestamp fechaCita;
 
 	private String sintomatologia;
 
@@ -44,12 +43,13 @@ public class Cita implements Serializable {
 	@ManyToOne
 	@JoinColumn(name="id_paciente")
 	private Persona pacientePersona;
+	
 
 
 	public Cita() {
 	}
 
-	public Cita(String comentarioCita, BigDecimal costo, String estadoCita, Date fechaCita, String sintomatologia,
+	public Cita(String comentarioCita, BigDecimal costo, String estadoCita, Timestamp fechaCita, String sintomatologia,
 			Persona doctorEspecialidad, Persona pacientePersona) {
 		super();
 		this.comentarioCita = comentarioCita;
@@ -93,11 +93,11 @@ public class Cita implements Serializable {
 		this.estadoCita = estadoCita;
 	}
 
-	public Date getFechaCita() {
+	public Timestamp getFechaCita() {
 		return this.fechaCita;
 	}
 
-	public void setFechaCita(Date fechaCita) {
+	public void setFechaCita(Timestamp fechaCita) {
 		this.fechaCita = fechaCita;
 	}
 

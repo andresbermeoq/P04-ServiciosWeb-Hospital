@@ -1,8 +1,11 @@
 package ec.edu.ups.rest;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 
@@ -46,14 +49,42 @@ public class CitaResource {
 		Persona doctor = personaFacade.find(doctorEspecialidad);
 		Persona paciente = personaFacade.find(pacientePersona);
 		
-		
-		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-		Date date = format.parse(fechaCita);
-		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+		LocalDateTime localDateTime = LocalDateTime.from(formatter.parse(fechaCita));
+		Timestamp date = Timestamp.valueOf(localDateTime);
 		
 		Cita cita = new Cita(comentarioCita, BigDecimal.valueOf(costo), estadoCita, date, sintomatologia, doctor, paciente);
 		citaFacade.create(cita);
 		return Response.status(Response.Status.CREATED).entity(cita).build();
+	}
+	
+	@PUT()
+	@Path("/actualizarCita")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response actualizarCitaTotal(@FormParam("comentario")String newComentario, @FormParam("fecha")String newFecha, 
+										@FormParam("sintomas")String newSintomas, @FormParam("id") Integer id) {
+		 Cita cita = citaFacade.find(id);
+		 	 
+		 try {
+			 if(cita == null) {
+				 return Response.status(Response.Status.NOT_MODIFIED).build();
+			 }else {
+				 cita.setComentarioCita(newComentario);
+				 
+				 cita.setSintomatologia(newSintomas);
+				 
+				 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+				 LocalDateTime localDateTime = LocalDateTime.from(formatter.parse(newFecha));
+				 Timestamp date = Timestamp.valueOf(localDateTime);
+				 cita.setFechaCita(date);
+				 
+				 citaFacade.edit(cita);
+				 return Response.ok(cita).build();	
+			 }
+			 
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(500).build();
+		}
 	}
 	
 	@PUT()
@@ -118,6 +149,27 @@ public class CitaResource {
 	}
 	
 	@GET
+	@Path("/listarbyId")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCitabyId(@QueryParam("id") Integer id) {
+		
+		try {
+			Cita cita = citaFacade.find(id);
+			
+			System.out.println("Cita --> " + cita);
+			
+			if (cita == null) {
+				return Response.status(Response.Status.NOT_FOUND).entity(404).build();
+			}else {
+				return Response.ok(cita).build();
+			}
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(500).build();
+		}
+		
+	}
+	
+	@GET
 	@Path("/listarFecha")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getListasFecha(@QueryParam("fecha") String fecha) {
@@ -139,6 +191,27 @@ public class CitaResource {
 		}
 		
 	}
+	
+	@GET
+	@Path("/listarPersona")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getListarPersona(@QueryParam("id") String id) {
+		try {
+			Jsonb jsonb = JsonbBuilder.create();
+			Persona persona = personaFacade.find(Integer.decode(id));
+			List<Cita> citas = citaFacade.getCitasbyPersona(persona);
+			
+			if (citas == null) {
+				return Response.status(Response.Status.NOT_FOUND).entity(404).build();
+			}else {
+				return Response.ok(jsonb.toJson(citas)).build();
+			}
+		} catch (Exception e) {
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(500).build();
+		}
+	}
+	
+	
 	
 	@GET
 	@Path("/listarMedico")
@@ -171,6 +244,14 @@ public class CitaResource {
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(500).build();
 		}
 		
+	}
+	
+	@GET()
+	@Path("/listar")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getCitas() {
+		Jsonb jsonb = JsonbBuilder.create();
+		return Response.ok(jsonb.toJson(citaFacade.findAll())).build();
 	}
 	
 	

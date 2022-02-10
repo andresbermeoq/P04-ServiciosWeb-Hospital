@@ -55,6 +55,26 @@ public class PacienteResource {
 	}
 	
 	@GET()
+	@Path("/listarNombre")
+	@Produces(MediaType.APPLICATION_JSON)
+	public Response getPersonaAll(@QueryParam("nombre") String nombreCompleto) {
+		
+		System.out.println("PERSONA  -->  " + nombreCompleto);
+		Jsonb jsonb = JsonbBuilder.create();
+		String[] wordString = nombreCompleto.split(" ");
+		
+		String nombre = null;
+		String apellido = null;
+		
+		
+		for (int i = 0; i < wordString.length; i++) {
+			nombre = wordString[0];
+			apellido = wordString[i];
+		}
+		return Response.ok(jsonb.toJson(personaFacade.getPersonasbyPaciente(nombre, apellido))).build();
+	}
+	
+	@GET()
 	@Path("/buscar")
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response getDoctorbyID(@QueryParam("id") Integer id) {
@@ -63,8 +83,8 @@ public class PacienteResource {
 	}
 	
 	@POST
-	@Path("/crearPaciente")
-	@Consumes(MediaType.APPLICATION_JSON)
+	@Path("/crear")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
 	@Produces(MediaType.APPLICATION_JSON)
 	public Response createPaciente(@FormParam("nombres") String name, @FormParam("apellidos") String lastName, @FormParam("correo") String correo,
 								   @FormParam("cedula") String dni, @FormParam("direccion") String direccion, @FormParam("password") String password,
